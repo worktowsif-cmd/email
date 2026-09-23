@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Push Banner & Email Ad Campaign Portal Studio</title>
+  <title id="page-title">Push Banner & Email Ad Campaign Portal Studio</title>
+  <meta id="meta-description" name="description" content="">
+  <link id="favicon-link" rel="icon" type="image/png" href="">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>tailwind.config = { darkMode: 'class' }</script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -18,7 +20,7 @@
   <header class="border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 backdrop-blur sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <div class="flex items-center gap-3 cursor-pointer" onclick="switchView('landing')">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+        <div id="brand-logo" class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 overflow-hidden">
           <i class="fa-solid fa-bolt-lightning text-lg"></i>
         </div>
         <div>
@@ -76,9 +78,7 @@
             <h1 id="hero-title" class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.1]">
               Send your Email Notifications <span class="bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">Now more easier way</span>
             </h1>
-            <p id="hero-subtitle" class="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed">
-              Create high-converting interactive push banners, text ads, GIF motions, and video alerts that directly trigger full Gmail newsletter experiences when tapped by subscribers.
-            </p>
+            <p id="hero-subtitle" class="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed"></p>
             <div class="flex flex-wrap items-center gap-4 pt-2">
               <button onclick="handleProtectedNav('studio')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-8 py-4 rounded-xl shadow-xl shadow-indigo-500/25 flex items-center gap-3 transition transform hover:-translate-y-0.5 text-sm">
                 <i class="fa-solid fa-play"></i> Launch Campaign Studio <i class="fa-solid fa-lock text-xs text-amber-300 ml-1" id="hero-lock-icon"></i>
@@ -93,6 +93,8 @@
               <div><h4 id="stat-support" class="text-2xl font-black text-slate-900 dark:text-white">24/7</h4><p class="text-xs text-slate-500 dark:text-slate-400">Automated Dispatch</p></div>
             </div>
           </div>
+
+          <!-- HERO PREVIEW CARD (fully backend-controlled) -->
           <div class="lg:col-span-5 flex justify-center relative">
             <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-3xl blur-xl opacity-30 animate-pulse"></div>
             <div class="relative w-full max-w-sm bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-2xl flex flex-col gap-4">
@@ -102,13 +104,13 @@
               </div>
               <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 text-slate-100 shadow-inner flex flex-col gap-2">
                 <div class="flex items-center justify-between text-[11px]">
-                  <span class="font-bold text-indigo-400"><i class="fa-solid fa-bell mr-1"></i> Flash Sale Store</span>
+                  <span class="font-bold text-indigo-400"><i class="fa-solid fa-bell mr-1"></i> <span id="hero-card-brand">Flash Sale Store</span></span>
                   <span class="text-slate-500">just now</span>
                 </div>
-                <h4 class="text-xs font-bold text-white">🔥 50% Off Everything Today!</h4>
-                <p class="text-[11px] text-slate-300">Tap to jump straight to our full Gmail newsletter campaign view.</p>
+                <h4 id="hero-card-title" class="text-xs font-bold text-white">🔥 50% Off Everything Today!</h4>
+                <p id="hero-card-subtitle" class="text-[11px] text-slate-300">Tap to jump straight to our full Gmail newsletter campaign view.</p>
                 <div class="mt-2 rounded-lg overflow-hidden h-28 bg-slate-800 flex items-center justify-center">
-                  <img src="https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600" alt="Demo" class="w-full h-full object-cover">
+                  <img id="hero-card-image" src="" alt="Hero Card" class="w-full h-full object-cover">
                 </div>
               </div>
             </div>
@@ -122,9 +124,9 @@
           <h3 class="text-3xl font-extrabold text-slate-900 dark:text-white">Everything You Need for High-Impact Push & Email Marketing</h3>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div class="bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 p-8 rounded-2xl shadow-xl flex flex-col gap-4"><div class="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center text-xl font-bold"><i class="fa-solid fa-layer-group"></i></div><h4 class="text-lg font-bold text-slate-900 dark:text-white">Multi-Format Ad Creator</h4><p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">Design Text Ads, Banner Images, Moving GIFs, and Small Video Ads tailored precisely for mobile notification dimensions.</p></div>
-          <div class="bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 p-8 rounded-2xl shadow-xl flex flex-col gap-4"><div class="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center text-xl font-bold"><i class="fa-solid fa-mobile-screen"></i></div><h4 class="text-lg font-bold text-slate-900 dark:text-white">OS & Device Simulator</h4><p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">Test how your push notifications pop up across iOS 18, Samsung One UI 6.1, and Android 15.</p></div>
-          <div class="bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 p-8 rounded-2xl shadow-xl flex flex-col gap-4"><div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-xl font-bold"><i class="fa-solid fa-envelope-open-text"></i></div><h4 class="text-lg font-bold text-slate-900 dark:text-white">Gmail App Newsletter Flow</h4><p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">When users click your notification, they instantly jump into a full Gmail app newsletter view.</p></div>
+          <div class="bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 p-8 rounded-2xl shadow-xl flex flex-col gap-4"><div class="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center text-xl font-bold"><i class="fa-solid fa-layer-group"></i></div><h4 class="text-lg font-bold text-slate-900 dark:text-white">Multi-Format Ad Creator</h4><p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">Design Text Ads, Banner Images, Moving GIFs, and Small Video Ads tailored for mobile notification dimensions.</p></div>
+          <div class="bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 p-8 rounded-2xl shadow-xl flex flex-col gap-4"><div class="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center text-xl font-bold"><i class="fa-solid fa-mobile-screen"></i></div><h4 class="text-lg font-bold text-slate-900 dark:text-white">OS & Device Simulator</h4><p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">Test push notifications across iOS 18, Samsung One UI 6.1, and Android 15.</p></div>
+          <div class="bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 p-8 rounded-2xl shadow-xl flex flex-col gap-4"><div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-xl font-bold"><i class="fa-solid fa-envelope-open-text"></i></div><h4 class="text-lg font-bold text-slate-900 dark:text-white">Gmail App Newsletter Flow</h4><p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">When users click your notification, they jump into a full Gmail newsletter view.</p></div>
         </div>
       </section>
 
@@ -188,7 +190,7 @@
             <div class="flex items-center gap-1.5 text-[10px]"><i class="fa-solid fa-signal"></i><i class="fa-solid fa-wifi"></i><i class="fa-solid fa-battery-full"></i></div>
           </div>
           <div class="flex-1 my-auto flex flex-col justify-start pt-8 px-1">
-            <div id="notification-card" onclick="openGmailApp()" class="w-full bg-slate-900/95 backdrop-blur-md border border-slate-700/60 rounded-2xl p-3 text-slate-100 shadow-2xl transition-all duration-300 cursor-pointer hover:border-indigo-500 group relative" title="Click notification to jump to Gmail Newsletter">
+            <div id="notification-card" onclick="openGmailApp()" class="w-full bg-slate-900/95 backdrop-blur-md border border-slate-700/60 rounded-2xl p-3 text-slate-100 shadow-2xl transition-all duration-300 cursor-pointer hover:border-indigo-500 group relative">
               <div class="absolute -top-2.5 right-3 bg-indigo-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow">Tap to Open Gmail <i class="fa-solid fa-arrow-up-right-from-square ml-0.5"></i></div>
               <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center gap-2">
@@ -238,14 +240,12 @@
             <div class="flex items-center gap-3"><i class="fa-regular fa-star"></i><i class="fa-solid fa-ellipsis-vertical"></i></div>
           </div>
           <div class="p-4 border-b border-slate-200 dark:border-slate-800">
-            <h3 id="nf-preview-subject" class="font-bold text-sm text-slate-900 dark:text-white leading-snug">Your Special 50% Off VIP Newsletter is Here!</h3>
+            <h3 id="nf-preview-subject" class="font-bold text-sm text-slate-900 dark:text-white leading-snug"></h3>
             <p class="text-[10px] text-slate-400 mt-1">To: subscriber@domain.com • <span class="text-emerald-500 font-medium">Verified Sender</span></p>
           </div>
           <div class="p-4 flex flex-col gap-3 max-h-[340px] overflow-y-auto custom-scrollbar">
-            <div class="w-full rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 aspect-video flex items-center justify-center">
-              <img id="nf-preview-img" src="https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800" alt="Hero" class="w-full h-full object-cover">
-            </div>
-            <p id="nf-preview-body" class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">Hello VIP Member...</p>
+            <div class="w-full rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 aspect-video flex items-center justify-center"><img id="nf-preview-img" src="" alt="Hero" class="w-full h-full object-cover"></div>
+            <p id="nf-preview-body" class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed"></p>
             <div class="pt-2 text-center"><a id="nf-preview-btn" href="#" class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-2.5 rounded-xl text-xs shadow-md transition">Claim 50% Discount Now</a></div>
           </div>
         </div>
@@ -326,7 +326,6 @@
   </div>
 
   <script>
-    /* ============== SHARED STORAGE (with admin-panel.html) ============== */
     const SHARED_KEYS = {
       USERS: 'enterprise_users',
       PERMS: 'enterprise_permissions',
@@ -338,12 +337,20 @@
     const DEFAULT_SITE_SETTINGS = {
       brandName: 'PushBannerHub',
       brandTagline: 'Enterprise Notification Portal',
+      logoIcon: 'fa-solid fa-bolt-lightning',
+      faviconUrl: 'https://cdn-icons-png.flaticon.com/512/1048/1048953.png',
+      tabTitle: 'Push Banner & Email Ad Campaign Portal Studio',
+      metaDescription: 'Create high-converting push banners, text ads, GIF motions, and video alerts.',
       heroBadge: 'Next-Gen Notification Marketing',
       heroTitle: 'Send your Email Notifications Now more easier way',
       heroSubtitle: 'Create high-converting interactive push banners, text ads, GIF motions, and video alerts that directly trigger full Gmail newsletter experiences when tapped by subscribers.',
       statDelivery: '99.9%',
       statEngagement: '4.8x',
       statSupport: '24/7',
+      heroCardBrand: 'Flash Sale Store',
+      heroCardTitle: '🔥 50% Off Everything Today!',
+      heroCardSubtitle: 'Tap to jump straight to our full Gmail newsletter campaign view.',
+      heroCardImage: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600',
       plans: [
         { name:'Standard', price:'500 BDT', badge:'Starter', desc:'Ideal for individual creators and small blogs starting push campaigns.', features:['Up to 5,000 Monthly Notifications','Text & Banner Ad Formats','Basic Gmail Newsletter View','Standard Device Previews'] },
         { name:'Premium', price:'1,100 TK', badge:'Pro Marketer', desc:'Designed for scaling businesses and agencies running regular pushes.', features:['Up to 50,000 Monthly Notifications','All Formats (Banner, GIF, Video)','Advanced Newsfeed Maker Suite','Latest iOS & Galaxy Device Simulators'] },
@@ -377,9 +384,7 @@
     }
 
     function saveSession(user) {
-      localStorage.setItem(SHARED_KEYS.SESSION, JSON.stringify({
-        id: user.id, name: user.name, username: user.username, role: user.role, loginTime: Date.now()
-      }));
+      localStorage.setItem(SHARED_KEYS.SESSION, JSON.stringify({ id: user.id, name: user.name, username: user.username, role: user.role, loginTime: Date.now() }));
     }
     function clearSession() { localStorage.removeItem(SHARED_KEYS.SESSION); }
 
@@ -399,21 +404,48 @@
     function toggleTheme() {
       const htmlEl = document.documentElement;
       const icon = document.getElementById('theme-icon');
-      if (htmlEl.classList.contains('dark')) {
-        htmlEl.classList.remove('dark'); icon.classList.remove('fa-sun'); icon.classList.add('fa-moon');
-      } else {
-        htmlEl.classList.add('dark'); icon.classList.remove('fa-moon'); icon.classList.add('fa-sun');
-      }
+      if (htmlEl.classList.contains('dark')) { htmlEl.classList.remove('dark'); icon.classList.remove('fa-sun'); icon.classList.add('fa-moon'); }
+      else { htmlEl.classList.add('dark'); icon.classList.remove('fa-moon'); icon.classList.add('sun'); icon.classList.add('fa-sun'); }
     }
 
+    /* ===========================
+       APPLY SETTINGS FROM BACKEND
+       =========================== */
     function applySiteSettings() {
       const s = STORE.settings;
+
+      /* --- Browser tab title + meta + favicon --- */
+      if (s.tabTitle) document.getElementById('page-title').textContent = s.tabTitle;
+      if (s.metaDescription) document.getElementById('meta-description').setAttribute('content', s.metaDescription);
+
+      const faviconLink = document.getElementById('favicon-link');
+      if (faviconLink) {
+        faviconLink.href = s.faviconUrl || DEFAULT_SITE_SETTINGS.faviconUrl;
+        // Add cache-buster so browsers refresh the favicon after a change
+        if (!faviconLink.href.includes('?')) faviconLink.href = faviconLink.href + '?v=' + Date.now();
+      }
+
+      /* --- Logo (URL or FontAwesome class) --- */
+      const logoBox = document.getElementById('brand-logo');
+      if (logoBox) {
+        const icon = (s.logoIcon || '').trim();
+        if (!icon) {
+          logoBox.innerHTML = `<i class="fa-solid fa-bolt-lightning text-lg"></i>`;
+        } else if (icon.startsWith('http') || icon.startsWith('data:') || icon.includes('/') || /\.(png|svg|jpg|jpeg|gif|webp|ico)$/i.test(icon)) {
+          logoBox.innerHTML = `<img src="${icon}" alt="logo" class="w-full h-full object-cover">`;
+        } else {
+          logoBox.innerHTML = `<i class="${icon} text-lg"></i>`;
+        }
+      }
+
+      /* --- Brand text --- */
       const brandEl = document.getElementById('brand-title');
       const name = (s.brandName || 'PushBannerHub').trim();
       if (name.length > 3) brandEl.innerHTML = `${name.slice(0, -3)}<span class="text-indigo-500">${name.slice(-3)}</span>`;
       else brandEl.textContent = name;
       document.getElementById('brand-tagline').textContent = s.brandTagline;
 
+      /* --- Hero text --- */
       document.getElementById('hero-badge').innerHTML = `<i class="fa-solid fa-rocket animate-bounce"></i> ${s.heroBadge}`;
       const titleEl = document.getElementById('hero-title');
       const t = (s.heroTitle || '').trim();
@@ -424,6 +456,17 @@
       document.getElementById('stat-delivery').textContent = s.statDelivery;
       document.getElementById('stat-engagement').textContent = s.statEngagement;
       document.getElementById('stat-support').textContent = s.statSupport;
+
+      /* --- Hero preview card (the marked image area) --- */
+      document.getElementById('hero-card-brand').textContent = s.heroCardBrand;
+      document.getElementById('hero-card-title').textContent = s.heroCardTitle;
+      document.getElementById('hero-card-subtitle').textContent = s.heroCardSubtitle;
+      const heroImg = document.getElementById('hero-card-image');
+      if (heroImg) {
+        // cache-buster so changing the URL refreshes the image reliably
+        heroImg.src = s.heroCardImage + (s.heroCardImage.includes('?') ? '&' : '?') + 'v=' + Date.now();
+      }
+
       renderPricingGrids();
     }
 
@@ -470,10 +513,7 @@
     function switchView(viewName) {
       if (viewName === 'studio' || viewName === 'newsfeed') {
         if (!isUserLoggedIn) { openLoginModal(); return; }
-        if (!canAccessModule(viewName)) {
-          showToast('Access Restricted', `Your role (${currentUser.role}) cannot access this module.`);
-          return;
-        }
+        if (!canAccessModule(viewName)) { showToast('Access Restricted', `Your role (${currentUser.role}) cannot access this module.`); return; }
       }
       const views = ['landing', 'studio', 'newsfeed', 'pricing'];
       views.forEach(v => {
@@ -505,12 +545,8 @@
       const box = document.getElementById('login-modal-box');
       document.getElementById('login-error').classList.add('hidden');
       modal.classList.remove('hidden');
-      setTimeout(() => {
-        modal.classList.remove('opacity-0');
-        box.classList.remove('scale-95'); box.classList.add('scale-100');
-      }, 10);
+      setTimeout(() => { modal.classList.remove('opacity-0'); box.classList.remove('scale-95'); box.classList.add('scale-100'); }, 10);
     }
-
     function closeLoginModal() {
       const modal = document.getElementById('login-modal');
       const box = document.getElementById('login-modal-box');
@@ -522,7 +558,7 @@
     function loginWithProvider(providerName, username) {
       STORE = readStore();
       const user = STORE.users.find(u => u.username === username);
-      if (!user) { showToast('Login Failed', 'Demo account not found in the shared user store.'); return; }
+      if (!user) { showToast('Login Failed', 'Demo account not found.'); return; }
       completeLogin(user, providerName);
     }
 
@@ -533,39 +569,29 @@
       const password = document.getElementById('manual-password').value.trim();
       const errBox = document.getElementById('login-error');
       const user = STORE.users.find(u => u.username === username && u.password === password);
-      if (!user) {
-        errBox.textContent = 'Invalid username or password. Accounts are managed in the Admin Panel.';
-        errBox.classList.remove('hidden');
-        return;
-      }
+      if (!user) { errBox.textContent = 'Invalid username or password.'; errBox.classList.remove('hidden'); return; }
       errBox.classList.add('hidden');
       completeLogin(user, 'Enterprise Account');
     }
 
-    // ⭐ FIXED: completeLogin now redirects to admin-panel.html (no spaces)
     function completeLogin(user, method) {
       currentUser = user;
       isUserLoggedIn = true;
-
       document.getElementById('open-login-modal-btn').classList.add('hidden');
       document.getElementById('user-profile').classList.remove('hidden');
       document.getElementById('user-name').innerText = user.name;
       document.getElementById('user-avatar').src = `https://ui-avatars.com/api/?background=6366f1&color=fff&bold=true&name=${encodeURIComponent(user.name)}`;
       document.getElementById('target-email').value = `${user.username}@${STORE.settings.brandName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'portal'}.io`;
-
       saveSession(user);
       updateLocks();
       updateRoleBanner();
       closeLoginModal();
-      showToast('Login Successful', `Welcome ${user.name} · ${user.role.toUpperCase()} — Opening Admin Panel...`);
-
-      // Redirect to admin panel (renamed file)
+      showToast('Login Successful', `Welcome ${user.name} — Opening Admin Panel...`);
       setTimeout(() => { window.location.href = 'admin-panel.html'; }, 800);
     }
 
     function logout() {
-      isUserLoggedIn = false;
-      currentUser = null;
+      isUserLoggedIn = false; currentUser = null;
       clearSession();
       document.getElementById('open-login-modal-btn').classList.remove('hidden');
       document.getElementById('user-profile').classList.add('hidden');
@@ -680,7 +706,6 @@
       modal.classList.remove('hidden');
       setTimeout(() => modal.classList.remove('opacity-0'), 10);
     }
-
     function closeGmailApp() {
       const modal = document.getElementById('gmail-modal');
       modal.classList.add('opacity-0');
