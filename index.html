@@ -65,7 +65,7 @@
     <a href="admin-panel.html" class="underline font-bold ml-2 hover:text-indigo-200">Open Admin Panel</a>
   </div>
 
-  <!-- ⭐ NEW: Gmail connection status (only shows if the admin has connected Gmail) -->
+  <!-- Gmail connection badge (only visible when admin has connected Gmail) -->
   <div id="gmail-badge" class="hidden bg-red-50 dark:bg-red-950/40 border-b border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 text-[11px] px-4 py-1.5 text-center font-medium">
     <i class="fa-solid fa-envelope-circle-check mr-1"></i>
     Gmail dispatch is <strong>active</strong> — emails will be sent from the connected account.
@@ -391,7 +391,7 @@
     }
 
     function readGmail() {
-      return JSON.parse(localStorage.getItem(SHARED_KEYS.GMAIL) || '{"connected":false,"email":"","connectedAt":null}');
+      return JSON.parse(localStorage.getItem(SHARED_KEYS.GMAIL) || '{"connected":false,"email":"","accessToken":"","expiresAt":0}');
     }
 
     function saveSession(user) {
@@ -419,13 +419,9 @@
       else { htmlEl.classList.add('dark'); icon.classList.remove('fa-moon'); icon.classList.add('fa-sun'); }
     }
 
-    /* ===========================
-       APPLY SETTINGS FROM BACKEND
-       =========================== */
     function applySiteSettings() {
       const s = STORE.settings;
 
-      /* Browser tab title + meta + favicon */
       if (s.tabTitle) document.getElementById('page-title').textContent = s.tabTitle;
       if (s.metaDescription) document.getElementById('meta-description').setAttribute('content', s.metaDescription);
       const faviconLink = document.getElementById('favicon-link');
@@ -434,7 +430,6 @@
         if (!faviconLink.href.includes('?')) faviconLink.href = faviconLink.href + '?v=' + Date.now();
       }
 
-      /* Logo (URL or FontAwesome class) */
       const logoBox = document.getElementById('brand-logo');
       if (logoBox) {
         const icon = (s.logoIcon || '').trim();
@@ -447,14 +442,12 @@
         }
       }
 
-      /* Brand text */
       const brandEl = document.getElementById('brand-title');
       const name = (s.brandName || 'PushBannerHub').trim();
       if (name.length > 3) brandEl.innerHTML = `${name.slice(0, -3)}<span class="text-indigo-500">${name.slice(-3)}</span>`;
       else brandEl.textContent = name;
       document.getElementById('brand-tagline').textContent = s.brandTagline;
 
-      /* Hero text */
       document.getElementById('hero-badge').innerHTML = `<i class="fa-solid fa-rocket animate-bounce"></i> ${s.heroBadge}`;
       const titleEl = document.getElementById('hero-title');
       const t = (s.heroTitle || '').trim();
@@ -466,7 +459,6 @@
       document.getElementById('stat-engagement').textContent = s.statEngagement;
       document.getElementById('stat-support').textContent = s.statSupport;
 
-      /* Hero preview card */
       document.getElementById('hero-card-brand').textContent = s.heroCardBrand;
       document.getElementById('hero-card-title').textContent = s.heroCardTitle;
       document.getElementById('hero-card-subtitle').textContent = s.heroCardSubtitle;
@@ -477,7 +469,6 @@
       applyGmailBadge();
     }
 
-    /* Show / hide the Gmail badge based on the shared connection state */
     function applyGmailBadge() {
       const g = readGmail();
       const badge = document.getElementById('gmail-badge');
@@ -733,19 +724,84 @@
       setTimeout(() => modal.classList.add('hidden'), 300);
     }
 
-    function sendPushNotification() {
+    /* ============================================================
+       SEND PUSH NOTIFICATION — actually sends via Gmail API
+       ============================================================ */
+    function buildRawEmailFE({ to, from, subject, body, html }) {
+      const boundary = 'PBH_' + Math.random().toString(36).slice(2);
+      const encodedSubject = '=?UTF-8?B?' + btoa(unescape(encodeURIComponent(subject))) + '?=';
+      const headers = [
+        `To: ${to}`,
+        `From: ${from}`,
+        `Subject: ${encodedSubject}`,
+        'MIME-Version: 1.0',
+        `Content-Type: multipart/alternative; boundary="${boundary}"`
+      ].join('\r\n');
+
+      const textPart = `--${boundary}\r\nContent-Type: text/plain; charset="UTF-8"\r\n\r\n${body}\r\n`;
+      const htmlPart = html ? `--${boundary}\r\nContent-Type: text/html; charset="UTF-8"\r\n\r\n${html}\r\n` : '';
+      const message = `${headers}\r\n\r\n${textPart}${htmlPart}--${boundary}--`;
+      return btoa(unescape(encodeURIComponent(message)))
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+
+    async function sendPushNotification() {
       if (!isUserLoggedIn) { openLoginModal(); return; }
       const email = document.getElementById('target-email').value;
       if (!email) { showToast('Error', 'Please enter a recipient email.'); return; }
 
-      // If Gmail is connected, mention it in the toast (real dispatch would happen via a backend)
       const g = readGmail();
-      const suffix = g.connected ? ` (via connected Gmail: ${g.email || 'authorized account'})` : '';
 
-      showToast('Dispatching Banner...', `Sending ${currentAdType.toUpperCase()} notification to ${email}${suffix}`);
-      const card = document.getElementById('notification-card');
-      card.style.transform = 'scale(0.95)';
-      setTimeout(() => { card.style.transform = 'scale(1)'; }, 200);
+      if (!g.connected || !g.accessToken) {
+        showToast('Gmail not connected', 'Open Admin Panel → Gmail Integration → Connect Gmail API first.');
+        return;
+      }
+      if (g.expiresAt && Date.now() > g.expiresAt) {
+        showToast('Token expired', 'Re-authorize Gmail in the Admin Panel.');
+        return;
+      }
+
+      const brand  = document.getElementById('push-app-title').value || 'PushBannerHub';
+      const header = document.getElementById('push-header').value || 'Notification';
+      const body   = document.getElementById('push-body').value || '';
+      const img    = document.getElementById('media-url').value || '';
+
+      const htmlBody = `
+        <div style="font-family:Inter,Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+            <h2 style="color:#4f46e5;">${brand}</h2>
+            <h3>${header}</h3>
+            <p>${body}</p>
+            ${img ? `<img src="${img}" style="max-width:100%;border-radius:12px;margin:16px 0;">` : ''}
+            <hr style="border:none;border-top:1px solid #eee;margin:24px 0;">
+            <p style="color:#888;font-size:12px">Sent from PushBannerHub · ${new Date().toLocaleString()}</p>
+        </div>`;
+
+      try {
+        showToast('Dispatching via Gmail…', `Sending to ${email}`);
+        const raw = buildRawEmailFE({ to: email, from: g.email || 'me', subject: header, body, html: htmlBody });
+
+        const res = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${g.accessToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ raw })
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(`Gmail API ${res.status}: ${errText}`);
+        }
+        const data = await res.json();
+        showToast('✅ Sent!', `Message ID: ${data.id}`);
+        const card = document.getElementById('notification-card');
+        card.style.transform = 'scale(0.95)';
+        setTimeout(() => { card.style.transform = 'scale(1)'; }, 200);
+      } catch (err) {
+        console.error(err);
+        showToast('❌ Send failed', err.message);
+      }
     }
 
     function showToast(title, msg) {
@@ -783,7 +839,6 @@
           switchView('landing');
         }
       }
-      // React instantly when the admin connects / disconnects Gmail in another tab
       if (e.key === SHARED_KEYS.GMAIL) applyGmailBadge();
     });
   </script>
