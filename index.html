@@ -65,6 +65,13 @@
     <a href="admin-panel.html" class="underline font-bold ml-2 hover:text-indigo-200">Open Admin Panel</a>
   </div>
 
+  <!-- ⭐ NEW: Gmail connection status (only shows if the admin has connected Gmail) -->
+  <div id="gmail-badge" class="hidden bg-red-50 dark:bg-red-950/40 border-b border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 text-[11px] px-4 py-1.5 text-center font-medium">
+    <i class="fa-solid fa-envelope-circle-check mr-1"></i>
+    Gmail dispatch is <strong>active</strong> — emails will be sent from the connected account.
+    <span id="gmail-badge-account" class="font-mono ml-1"></span>
+  </div>
+
   <main class="flex-1 flex flex-col w-full">
 
     <!-- LANDING -->
@@ -94,7 +101,6 @@
             </div>
           </div>
 
-          <!-- HERO PREVIEW CARD (fully backend-controlled) -->
           <div class="lg:col-span-5 flex justify-center relative">
             <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-3xl blur-xl opacity-30 animate-pulse"></div>
             <div class="relative w-full max-w-sm bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-2xl flex flex-col gap-4">
@@ -331,7 +337,8 @@
       PERMS: 'enterprise_permissions',
       PROJECTS: 'enterprise_projects',
       SETTINGS: 'enterprise_site_settings',
-      SESSION: 'enterprise_session'
+      SESSION: 'enterprise_session',
+      GMAIL: 'enterprise_gmail_connection'
     };
 
     const DEFAULT_SITE_SETTINGS = {
@@ -383,6 +390,10 @@
       return { users, perms, settings };
     }
 
+    function readGmail() {
+      return JSON.parse(localStorage.getItem(SHARED_KEYS.GMAIL) || '{"connected":false,"email":"","connectedAt":null}');
+    }
+
     function saveSession(user) {
       localStorage.setItem(SHARED_KEYS.SESSION, JSON.stringify({ id: user.id, name: user.name, username: user.username, role: user.role, loginTime: Date.now() }));
     }
@@ -405,7 +416,7 @@
       const htmlEl = document.documentElement;
       const icon = document.getElementById('theme-icon');
       if (htmlEl.classList.contains('dark')) { htmlEl.classList.remove('dark'); icon.classList.remove('fa-sun'); icon.classList.add('fa-moon'); }
-      else { htmlEl.classList.add('dark'); icon.classList.remove('fa-moon'); icon.classList.add('sun'); icon.classList.add('fa-sun'); }
+      else { htmlEl.classList.add('dark'); icon.classList.remove('fa-moon'); icon.classList.add('fa-sun'); }
     }
 
     /* ===========================
@@ -414,18 +425,16 @@
     function applySiteSettings() {
       const s = STORE.settings;
 
-      /* --- Browser tab title + meta + favicon --- */
+      /* Browser tab title + meta + favicon */
       if (s.tabTitle) document.getElementById('page-title').textContent = s.tabTitle;
       if (s.metaDescription) document.getElementById('meta-description').setAttribute('content', s.metaDescription);
-
       const faviconLink = document.getElementById('favicon-link');
       if (faviconLink) {
         faviconLink.href = s.faviconUrl || DEFAULT_SITE_SETTINGS.faviconUrl;
-        // Add cache-buster so browsers refresh the favicon after a change
         if (!faviconLink.href.includes('?')) faviconLink.href = faviconLink.href + '?v=' + Date.now();
       }
 
-      /* --- Logo (URL or FontAwesome class) --- */
+      /* Logo (URL or FontAwesome class) */
       const logoBox = document.getElementById('brand-logo');
       if (logoBox) {
         const icon = (s.logoIcon || '').trim();
@@ -438,14 +447,14 @@
         }
       }
 
-      /* --- Brand text --- */
+      /* Brand text */
       const brandEl = document.getElementById('brand-title');
       const name = (s.brandName || 'PushBannerHub').trim();
       if (name.length > 3) brandEl.innerHTML = `${name.slice(0, -3)}<span class="text-indigo-500">${name.slice(-3)}</span>`;
       else brandEl.textContent = name;
       document.getElementById('brand-tagline').textContent = s.brandTagline;
 
-      /* --- Hero text --- */
+      /* Hero text */
       document.getElementById('hero-badge').innerHTML = `<i class="fa-solid fa-rocket animate-bounce"></i> ${s.heroBadge}`;
       const titleEl = document.getElementById('hero-title');
       const t = (s.heroTitle || '').trim();
@@ -457,17 +466,29 @@
       document.getElementById('stat-engagement').textContent = s.statEngagement;
       document.getElementById('stat-support').textContent = s.statSupport;
 
-      /* --- Hero preview card (the marked image area) --- */
+      /* Hero preview card */
       document.getElementById('hero-card-brand').textContent = s.heroCardBrand;
       document.getElementById('hero-card-title').textContent = s.heroCardTitle;
       document.getElementById('hero-card-subtitle').textContent = s.heroCardSubtitle;
       const heroImg = document.getElementById('hero-card-image');
-      if (heroImg) {
-        // cache-buster so changing the URL refreshes the image reliably
-        heroImg.src = s.heroCardImage + (s.heroCardImage.includes('?') ? '&' : '?') + 'v=' + Date.now();
-      }
+      if (heroImg) heroImg.src = s.heroCardImage + (s.heroCardImage.includes('?') ? '&' : '?') + 'v=' + Date.now();
 
       renderPricingGrids();
+      applyGmailBadge();
+    }
+
+    /* Show / hide the Gmail badge based on the shared connection state */
+    function applyGmailBadge() {
+      const g = readGmail();
+      const badge = document.getElementById('gmail-badge');
+      const badgeAcct = document.getElementById('gmail-badge-account');
+      if (!badge) return;
+      if (g.connected) {
+        badge.classList.remove('hidden');
+        if (badgeAcct) badgeAcct.textContent = g.email ? `(${g.email})` : '';
+      } else {
+        badge.classList.add('hidden');
+      }
     }
 
     function renderPricingGrids() {
@@ -716,7 +737,12 @@
       if (!isUserLoggedIn) { openLoginModal(); return; }
       const email = document.getElementById('target-email').value;
       if (!email) { showToast('Error', 'Please enter a recipient email.'); return; }
-      showToast('Dispatching Banner...', `Sending ${currentAdType.toUpperCase()} notification to ${email}`);
+
+      // If Gmail is connected, mention it in the toast (real dispatch would happen via a backend)
+      const g = readGmail();
+      const suffix = g.connected ? ` (via connected Gmail: ${g.email || 'authorized account'})` : '';
+
+      showToast('Dispatching Banner...', `Sending ${currentAdType.toUpperCase()} notification to ${email}${suffix}`);
       const card = document.getElementById('notification-card');
       card.style.transform = 'scale(0.95)';
       setTimeout(() => { card.style.transform = 'scale(1)'; }, 200);
@@ -757,6 +783,8 @@
           switchView('landing');
         }
       }
+      // React instantly when the admin connects / disconnects Gmail in another tab
+      if (e.key === SHARED_KEYS.GMAIL) applyGmailBadge();
     });
   </script>
 </body>
