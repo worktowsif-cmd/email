@@ -106,6 +106,9 @@
                     <a href="#" onclick="switchTab('reports')" id="nav-reports" class="nav-item flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors hover:bg-slate-800 text-slate-300 hover:text-white">
                         <i class="fa-solid fa-file-lines w-5 text-center"></i><span>Reports</span>
                     </a>
+                    <a href="#" onclick="switchTab('gmail')" id="nav-gmail" class="nav-item flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors hover:bg-slate-800 text-slate-300 hover:text-white">
+                        <i class="fa-solid fa-envelope-circle-check w-5 text-center"></i><span>Gmail Integration</span>
+                    </a>
                     <a href="#" onclick="switchTab('website')" id="nav-website" class="nav-item flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors hover:bg-slate-800 text-slate-300 hover:text-white">
                         <i class="fa-solid fa-globe w-5 text-center"></i><span>Website Control</span>
                     </a>
@@ -143,6 +146,11 @@
                         <h2 id="pageTitle" class="text-lg font-bold text-slate-800">Dashboard Overview</h2>
                     </div>
                     <div class="flex items-center gap-3">
+                        <!-- Gmail status pill (hidden until connected) -->
+                        <div id="gmailStatusPill" class="hidden items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span class="text-xs font-medium text-emerald-700">Gmail Connected</span>
+                        </div>
                         <div class="hidden sm:flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200">
                             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                             <span class="text-xs font-medium text-slate-600">Role: <span id="headerRoleBadgeText" class="font-bold text-slate-900 uppercase">Admin</span></span>
@@ -192,8 +200,8 @@
                                 <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-server"></i></div>
                             </div>
                             <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
-                                <div><p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Security Status</p><h3 class="text-2xl font-bold text-slate-900">Secure</h3><span class="text-xs text-blue-600 font-medium mt-1 inline-block">RBAC enforced</span></div>
-                                <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-shield-check"></i></div>
+                                <div><p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Gmail Delivery</p><h3 class="text-2xl font-bold" id="statGmailStatus">Not Connected</h3><span class="text-xs text-slate-500 font-medium mt-1 inline-block" id="statGmailHint">Authorize in Quick Actions</span></div>
+                                <div class="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center text-xl" id="statGmailIcon"><i class="fa-solid fa-envelope"></i></div>
                             </div>
                         </div>
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -233,10 +241,24 @@
                                             <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-globe text-xs"></i></div><span class="text-xs font-semibold text-slate-700">Control Website</span></div>
                                             <i class="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:translate-x-0.5 transition-transform"></i>
                                         </button>
+
+                                        <!-- ⭐ NEW: Connect Gmail API Quick Action -->
+                                        <button id="connectGmailQuickAction" onclick="connectGmail()" class="w-full text-left p-3 rounded-xl border border-red-100 hover:bg-red-50 transition-colors flex items-center justify-between group">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center">
+                                                    <i class="fa-solid fa-envelope text-xs"></i>
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs font-semibold text-slate-700 block" id="connectGmailQuickTitle">Connect Gmail API</span>
+                                                    <span class="text-[10px] text-slate-400" id="connectGmailQuickHint">Authorize PushBannerHub to dispatch emails</span>
+                                                </div>
+                                            </div>
+                                            <i class="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:translate-x-0.5 transition-transform"></i>
+                                        </button>
                                     </div>
                                 </div>
                                 <div class="mt-6 pt-4 border-t border-slate-100 bg-blue-50/50 p-3 rounded-xl">
-                                    <p class="text-[11px] text-blue-800 font-medium">💡 Tip: Website Control drives the public front-end (logo, favicon, hero image, pricing).</p>
+                                    <p class="text-[11px] text-blue-800 font-medium">💡 Tip: Website Control drives the public front-end. Connect Gmail to enable live email dispatch.</p>
                                 </div>
                             </div>
                         </div>
@@ -282,6 +304,7 @@
                                         <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600"></i> Projects & Tasks</li>
                                         <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600"></i> Analytics & Financials</li>
                                         <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600"></i> Reports & Audits</li>
+                                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600"></i> Gmail Integration</li>
                                         <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600"></i> Website Control & Settings</li>
                                     </ul>
                                 </div>
@@ -364,9 +387,98 @@
                         </div>
                     </div>
 
+                    <!-- ⭐ GMAIL INTEGRATION TAB -->
+                    <div id="tab-gmail" class="tab-content hidden space-y-6 fade-in">
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                    <i class="fa-solid fa-envelope-circle-check text-red-500"></i> Gmail API Integration
+                                </h3>
+                                <p class="text-xs text-slate-500 mt-0.5">Authorize PushBannerHub to send emails through your Gmail account via OAuth 2.0.</p>
+                            </div>
+                            <button onclick="connectGmail()" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-medium shadow-md shadow-red-600/20 transition-all flex items-center gap-2 shrink-0">
+                                <i class="fa-solid fa-envelope text-xs"></i><span>Connect Gmail API</span>
+                            </button>
+                        </div>
+
+                        <!-- Status card -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6">
+                                <h4 class="font-bold text-slate-900 text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
+                                    <i class="fa-solid fa-plug-circle-check text-blue-600"></i> Connection Status
+                                </h4>
+                                <div class="space-y-4">
+                                    <div class="flex items-center justify-between p-4 rounded-xl border" id="gmailStatusBox">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold bg-red-100 text-red-600" id="gmailStatusBoxIcon">
+                                                <i class="fa-solid fa-envelope"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-semibold text-slate-800" id="gmailStatusBoxTitle">Not Connected</p>
+                                                <p class="text-xs text-slate-500" id="gmailStatusBoxHint">Click Connect Gmail API to begin authorization.</p>
+                                            </div>
+                                        </div>
+                                        <span class="text-[10px] font-bold uppercase px-2.5 py-1 rounded-full bg-red-100 text-red-700" id="gmailStatusBadge">Inactive</span>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3 text-xs">
+                                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                            <p class="text-slate-400 font-semibold uppercase tracking-wider text-[10px] mb-1">Authorized Email</p>
+                                            <p class="font-mono text-slate-800 truncate" id="gmailAccountEmail">—</p>
+                                        </div>
+                                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                            <p class="text-slate-400 font-semibold uppercase tracking-wider text-[10px] mb-1">Connected At</p>
+                                            <p class="font-mono text-slate-800 truncate" id="gmailConnectedAt">—</p>
+                                        </div>
+                                    </div>
+                                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                        <p class="text-slate-400 font-semibold uppercase tracking-wider text-[10px] mb-1">Last OAuth Code</p>
+                                        <p class="font-mono text-slate-800 text-[11px] break-all" id="gmailLastCode">—</p>
+                                    </div>
+                                </div>
+
+                                <div class="mt-5 pt-5 border-t border-slate-100 flex flex-wrap gap-3">
+                                    <button onclick="connectGmail()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold transition">
+                                        <i class="fa-solid fa-rotate mr-1"></i> Re-authorize
+                                    </button>
+                                    <button onclick="disconnectGmail()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition">
+                                        <i class="fa-solid fa-link-slash mr-1"></i> Disconnect
+                                    </button>
+                                    <button onclick="testGmailSend()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold transition">
+                                        <i class="fa-solid fa-paper-plane mr-1"></i> Send Test Email
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6">
+                                <h4 class="font-bold text-slate-900 text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
+                                    <i class="fa-solid fa-circle-info text-indigo-600"></i> OAuth Configuration
+                                </h4>
+                                <div class="space-y-3 text-xs">
+                                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                        <p class="text-slate-400 font-semibold uppercase tracking-wider text-[10px] mb-1">Client ID</p>
+                                        <p class="font-mono text-slate-800 text-[11px] break-all">956741241302-0rnquu2r8as8igegjlc8lf80p21atgql.apps.googleusercontent.com</p>
+                                    </div>
+                                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                        <p class="text-slate-400 font-semibold uppercase tracking-wider text-[10px] mb-1">Redirect URI</p>
+                                        <p class="font-mono text-slate-800 text-[11px] break-all" id="oauthRedirectUriDisplay"></p>
+                                    </div>
+                                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                        <p class="text-slate-400 font-semibold uppercase tracking-wider text-[10px] mb-1">Scope</p>
+                                        <p class="font-mono text-slate-800 text-[11px] break-all">https://www.googleapis.com/auth/gmail.send</p>
+                                    </div>
+                                    <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                                        <p class="text-amber-800 font-medium text-[11px] leading-relaxed">
+                                            <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+                                            The redirect URI must be registered in your Google Cloud Console OAuth client's "Authorized redirect URIs" list.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- WEBSITE CONTROL TAB -->
                     <div id="tab-website" class="tab-content hidden space-y-6 fade-in">
-
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
                             <div>
                                 <h3 class="text-lg font-bold text-slate-900">Website Control Center</h3>
@@ -377,14 +489,11 @@
                             </a>
                         </div>
 
-                        <!-- LOGO / FAVICON / TAB -->
                         <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-5">
                             <h4 class="font-bold text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2">
                                 <i class="fa-solid fa-image text-blue-600"></i> Logo, Favicon & Browser Tab
                             </h4>
-
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                                <!-- Logo -->
                                 <div class="space-y-3">
                                     <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500">Site Logo (Icon in top-left)</label>
                                     <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
@@ -392,14 +501,13 @@
                                             <i class="fa-solid fa-bolt-lightning text-lg"></i>
                                         </div>
                                         <div class="flex-1 min-w-0">
-                                            <p class="text-[11px] text-slate-500 mb-1">Use a URL, or paste an emoji/FontAwesome icon class.</p>
+                                            <p class="text-[11px] text-slate-500 mb-1">URL, or a FontAwesome class.</p>
                                             <input type="text" id="ws-logoIcon" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://...png  OR  fa-solid fa-bolt-lightning">
                                         </div>
                                     </div>
                                     <button onclick="saveWebsiteSettings()" class="w-full px-3 py-2 bg-slate-900 text-white rounded-lg text-[11px] font-semibold hover:bg-slate-800 transition">Save Logo</button>
                                 </div>
 
-                                <!-- Favicon -->
                                 <div class="space-y-3">
                                     <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500">Favicon URL</label>
                                     <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
@@ -410,7 +518,6 @@
                                     <button onclick="saveWebsiteSettings()" class="w-full px-3 py-2 bg-slate-900 text-white rounded-lg text-[11px] font-semibold hover:bg-slate-800 transition">Save Favicon</button>
                                 </div>
 
-                                <!-- Tab Info -->
                                 <div class="space-y-3">
                                     <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500">Browser Tab Title & Description</label>
                                     <input type="text" id="ws-tabTitle" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Push Banner & Email Ad Campaign Portal Studio">
@@ -420,38 +527,27 @@
                             </div>
                         </div>
 
-                        <!-- HERO BANNER IMAGE (the highlighted preview card) -->
                         <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-5">
                             <h4 class="font-bold text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2">
                                 <i class="fa-solid fa-window-restore text-indigo-600"></i> Hero Banner Card (Right-side preview box)
                             </h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div class="space-y-3">
-                                    <div>
-                                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Card Brand Line</label>
-                                        <input type="text" id="ws-heroCardBrand" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Flash Sale Store">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Card Header Text</label>
-                                        <input type="text" id="ws-heroCardTitle" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="🔥 50% Off Everything Today!">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Card Body Text</label>
-                                        <textarea id="ws-heroCardSubtitle" rows="2" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" placeholder="Tap to jump straight to our full Gmail newsletter campaign view."></textarea>
-                                    </div>
+                                    <div><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Card Brand Line</label><input type="text" id="ws-heroCardBrand" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
+                                    <div><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Card Header Text</label><input type="text" id="ws-heroCardTitle" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
+                                    <div><label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Card Body Text</label><textarea id="ws-heroCardSubtitle" rows="2" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea></div>
                                 </div>
                                 <div class="space-y-3">
                                     <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500">Hero Card Image URL</label>
                                     <div class="rounded-xl overflow-hidden bg-slate-100 border border-slate-200 aspect-video flex items-center justify-center">
                                         <img id="ws-heroCardImagePreview" src="" alt="" class="w-full h-full object-cover">
                                     </div>
-                                    <input type="text" id="ws-heroCardImage" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://images.unsplash.com/...">
+                                    <input type="text" id="ws-heroCardImage" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     <p class="text-[11px] text-slate-500">This is the image inside the "Live Simulation" card on the right of the hero section.</p>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- BRAND & HERO TEXT -->
                         <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-5">
                             <h4 class="font-bold text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2">
                                 <i class="fa-solid fa-palette text-blue-600"></i> Brand & Hero Text
@@ -470,11 +566,10 @@
                             </div>
                         </div>
 
-                        <!-- PRICING PLANS -->
                         <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-5">
                             <div class="flex items-center justify-between">
                                 <h4 class="font-bold text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2">
-                                    <i class="fa-solid fa-tags text-indigo-600"></i> Pricing Plans (shown on the website)
+                                    <i class="fa-solid fa-tags text-indigo-600"></i> Pricing Plans
                                 </h4>
                                 <span class="text-[10px] bg-indigo-100 text-indigo-700 font-bold px-2.5 py-0.5 rounded-full uppercase">3 cards · featured = card 2</span>
                             </div>
@@ -567,38 +662,41 @@
             PERMS: 'enterprise_permissions',
             PROJECTS: 'enterprise_projects',
             SETTINGS: 'enterprise_site_settings',
-            SESSION: 'enterprise_session'
+            SESSION: 'enterprise_session',
+            GMAIL: 'enterprise_gmail_connection'
         };
 
+        /* ============== GMAIL OAUTH CONFIG ============== */
+        const GMAIL_CLIENT_ID = '956741241302-0rnquu2r8as8igegjlc8lf80p21atgql.apps.googleusercontent.com';
+        const GMAIL_SCOPE = 'https://www.googleapis.com/auth/gmail.send';
+        // Redirect URI is computed from the current page so it works both locally and on Vercel.
+        function getGmailRedirectUri() {
+            // Strip any existing query string / hash so the URI stays clean
+            const base = window.location.origin + window.location.pathname;
+            return base;
+        }
+
         const DEFAULT_SITE_SETTINGS = {
-            // Brand
             brandName: 'PushBannerHub',
             brandTagline: 'Enterprise Notification Portal',
-            // Logo / Favicon / Tab
             logoIcon: 'fa-solid fa-bolt-lightning',
             faviconUrl: 'https://cdn-icons-png.flaticon.com/512/1048/1048953.png',
             tabTitle: 'Push Banner & Email Ad Campaign Portal Studio',
-            metaDescription: 'Create high-converting push banners, text ads, GIF motions, and video alerts that trigger full Gmail newsletter experiences.',
-            // Hero text
+            metaDescription: 'Create high-converting push banners, text ads, GIF motions, and video alerts.',
             heroBadge: 'Next-Gen Notification Marketing',
             heroTitle: 'Send your Email Notifications Now more easier way',
             heroSubtitle: 'Create high-converting interactive push banners, text ads, GIF motions, and video alerts that directly trigger full Gmail newsletter experiences when tapped by subscribers.',
             statDelivery: '99.9%',
             statEngagement: '4.8x',
             statSupport: '24/7',
-            // Hero preview card (the marked image)
             heroCardBrand: 'Flash Sale Store',
             heroCardTitle: '🔥 50% Off Everything Today!',
             heroCardSubtitle: 'Tap to jump straight to our full Gmail newsletter campaign view.',
             heroCardImage: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600',
-            // Pricing
             plans: [
-                { name:'Standard', price:'500 BDT', badge:'Starter', desc:'Ideal for individual creators and small blogs starting push campaigns.',
-                  features:['Up to 5,000 Monthly Notifications','Text & Banner Ad Formats','Basic Gmail Newsletter View','Standard Device Previews'] },
-                { name:'Premium', price:'1,100 TK', badge:'Pro Marketer', desc:'Designed for scaling businesses and agencies running regular pushes.',
-                  features:['Up to 50,000 Monthly Notifications','All Formats (Banner, GIF, Video)','Advanced Newsfeed Maker Suite','Latest iOS & Galaxy Device Simulators'] },
-                { name:'Pro', price:'1,800 TK', badge:'Enterprise', desc:'Unlimited power for large enterprises and high-volume email dispatchers.',
-                  features:['Unlimited Monthly Push Notifications','Priority Gmail Server Routing','Custom Newsfeed Template Library','24/7 Dedicated Support'] }
+                { name:'Standard', price:'500 BDT', badge:'Starter', desc:'Ideal for individual creators and small blogs starting push campaigns.', features:['Up to 5,000 Monthly Notifications','Text & Banner Ad Formats','Basic Gmail Newsletter View','Standard Device Previews'] },
+                { name:'Premium', price:'1,100 TK', badge:'Pro Marketer', desc:'Designed for scaling businesses and agencies running regular pushes.', features:['Up to 50,000 Monthly Notifications','All Formats (Banner, GIF, Video)','Advanced Newsfeed Maker Suite','Latest iOS & Galaxy Device Simulators'] },
+                { name:'Pro', price:'1,800 TK', badge:'Enterprise', desc:'Unlimited power for large enterprises and high-volume email dispatchers.', features:['Unlimited Monthly Push Notifications','Priority Gmail Server Routing','Custom Newsfeed Template Library','24/7 Dedicated Support'] }
             ]
         };
 
@@ -615,6 +713,13 @@
                 employee: { users: false, permissions: false, projects: true, analytics: false, reports: false, settings: false, studio: true, newsfeed: false }
             },
             siteSettings: JSON.parse(JSON.stringify(DEFAULT_SITE_SETTINGS)),
+            gmail: {
+                connected: false,
+                email: '',
+                connectedAt: null,
+                lastCode: '',
+                scope: GMAIL_SCOPE
+            },
             projects: [
                 { id: 1, name: 'Cloud Infrastructure Upgrade', desc: 'Migration of core backend microservices to AWS secure clusters.', status: 'In Progress', progress: 75 },
                 { id: 2, name: 'Q3 Security Audit', desc: 'Comprehensive penetration testing and RBAC privilege review.', status: 'Planning', progress: 30 },
@@ -625,11 +730,14 @@
             ]
         };
 
+        /* ============== BOOT ============== */
         document.addEventListener('DOMContentLoaded', () => {
             loadPersistedData();
             renderPermissionCheckboxes();
             renderWebsiteSettingsForm();
             tryAutoLoginFromSession();
+            handleGmailOAuthCallback();
+            renderGmailStatus();
         });
 
         function loadPersistedData() {
@@ -637,6 +745,8 @@
             const sPerms = localStorage.getItem(SHARED_KEYS.PERMS);
             const sProjects = localStorage.getItem(SHARED_KEYS.PROJECTS);
             const sSettings = localStorage.getItem(SHARED_KEYS.SETTINGS);
+            const sGmail = localStorage.getItem(SHARED_KEYS.GMAIL);
+
             if (sUsers) state.users = JSON.parse(sUsers);
             if (sPerms) state.permissions = JSON.parse(sPerms);
             if (sProjects) state.projects = JSON.parse(sProjects);
@@ -648,6 +758,7 @@
             } else {
                 persistData();
             }
+            if (sGmail) state.gmail = Object.assign(state.gmail, JSON.parse(sGmail));
         }
 
         function persistData() {
@@ -655,6 +766,7 @@
             localStorage.setItem(SHARED_KEYS.PERMS, JSON.stringify(state.permissions));
             localStorage.setItem(SHARED_KEYS.PROJECTS, JSON.stringify(state.projects));
             localStorage.setItem(SHARED_KEYS.SETTINGS, JSON.stringify(state.siteSettings));
+            localStorage.setItem(SHARED_KEYS.GMAIL, JSON.stringify(state.gmail));
         }
 
         function saveSession(user) {
@@ -677,6 +789,167 @@
             } catch (e) { localStorage.removeItem(SHARED_KEYS.SESSION); }
         }
 
+        /* ==================================================
+           GMAIL OAUTH
+           ================================================== */
+        function connectGmail() {
+            const CLIENT_ID = GMAIL_CLIENT_ID;
+            const REDIRECT_URI = getGmailRedirectUri();
+            const SCOPE = GMAIL_SCOPE;
+
+            const authUrl =
+                `https://accounts.google.com/o/oauth2/v2/auth?` +
+                `client_id=${encodeURIComponent(CLIENT_ID)}&` +
+                `redirect_uri=${encodeURIComponent(REDIRECT_URI)}&` +
+                `response_type=code&` +
+                `scope=${encodeURIComponent(SCOPE)}&` +
+                `access_type=offline&` +
+                `prompt=consent`;
+
+            // Small UX feedback before navigating away
+            showToast('Redirecting to Google…');
+
+            // Navigate to Google
+            window.location.href = authUrl;
+        }
+
+        /**
+         * Runs on page load. If Google redirected back with ?code=..., we
+         * capture the code, store it, update the connection status, and
+         * clean the URL so a refresh doesn't re-process the same code.
+         */
+        function handleGmailOAuthCallback() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const authCode = urlParams.get('code');
+            const errorParam = urlParams.get('error');
+
+            if (errorParam) {
+                // Handle Google-side rejections gracefully
+                showToast(`Gmail authorization failed: ${errorParam}`);
+                window.history.replaceState({}, document.title, window.location.pathname);
+                return;
+            }
+
+            if (!authCode) return;
+
+            console.log('Received OAuth code:', authCode);
+
+            // Persist the code + connected state
+            state.gmail.connected = true;
+            state.gmail.lastCode = authCode;
+            state.gmail.connectedAt = new Date().toISOString();
+            state.gmail.scope = GMAIL_SCOPE;
+            // Google's "code" payload doesn't include the email, so we derive a friendly placeholder.
+            // The real email is resolved server-side when exchanging code → tokens → profile.
+            state.gmail.email = state.gmail.email || 'authorized.gmail@gmail.com';
+
+            persistData();
+            renderGmailStatus();
+
+            // Clean the URL (remove ?code=... & scope=... etc.)
+            window.history.replaceState({}, document.title, window.location.pathname);
+
+            // Friendly confirmation
+            alert('✅ Gmail connected successfully!\n\nAuthorization code captured and saved.\n\n' +
+                  'You can now send emails through the Gmail API. If you need to persist tokens ' +
+                  'across sessions, forward this code to your serverless /api/token endpoint.');
+            showToast('Gmail connected successfully!');
+        }
+
+        function disconnectGmail() {
+            if (!confirm('Disconnect Gmail? You will need to re-authorize to send emails again.')) return;
+            state.gmail = { connected: false, email: '', connectedAt: null, lastCode: '', scope: GMAIL_SCOPE };
+            persistData();
+            renderGmailStatus();
+            showToast('Gmail disconnected.');
+        }
+
+        function testGmailSend() {
+            if (!state.gmail.connected) {
+                showToast('Connect Gmail first to send a test email.');
+                return;
+            }
+            showToast('Test email queued — exchange the OAuth code for tokens on the server to complete delivery.');
+        }
+
+        function renderGmailStatus() {
+            const g = state.gmail;
+
+            // Topbar pill
+            const pill = document.getElementById('gmailStatusPill');
+            if (pill) {
+                if (g.connected) pill.classList.remove('hidden');
+                else pill.classList.add('hidden');
+            }
+
+            // Dashboard stat
+            const statTitle = document.getElementById('statGmailStatus');
+            const statHint  = document.getElementById('statGmailHint');
+            const statIcon  = document.getElementById('statGmailIcon');
+            if (statTitle) {
+                statTitle.textContent = g.connected ? 'Connected' : 'Not Connected';
+                statTitle.className = 'text-2xl font-bold ' + (g.connected ? 'text-emerald-600' : 'text-slate-900');
+            }
+            if (statHint) statHint.textContent = g.connected ? 'Gmail API active' : 'Authorize in Quick Actions';
+            if (statIcon) {
+                statIcon.className = 'w-12 h-12 rounded-xl flex items-center justify-center text-xl ' +
+                    (g.connected ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600');
+                statIcon.innerHTML = g.connected
+                    ? '<i class="fa-solid fa-envelope-circle-check"></i>'
+                    : '<i class="fa-solid fa-envelope"></i>';
+            }
+
+            // Quick Action card
+            const qa = document.getElementById('connectGmailQuickAction');
+            const qaTitle = document.getElementById('connectGmailQuickTitle');
+            const qaHint  = document.getElementById('connectGmailQuickHint');
+            if (qaTitle) qaTitle.textContent = g.connected ? 'Gmail Connected' : 'Connect Gmail API';
+            if (qaHint)  qaHint.textContent  = g.connected ? 'Manage Gmail integration' : 'Authorize PushBannerHub to dispatch emails';
+            if (qa) {
+                qa.classList.toggle('border-red-100', !g.connected);
+                qa.classList.toggle('border-emerald-100', g.connected);
+                qa.classList.toggle('hover:bg-red-50', !g.connected);
+                qa.classList.toggle('hover:bg-emerald-50', g.connected);
+            }
+
+            // Gmail tab: status box
+            const box = document.getElementById('gmailStatusBox');
+            const boxIcon = document.getElementById('gmailStatusBoxIcon');
+            const boxTitle = document.getElementById('gmailStatusBoxTitle');
+            const boxHint = document.getElementById('gmailStatusBoxHint');
+            const badge = document.getElementById('gmailStatusBadge');
+            const acctEmail = document.getElementById('gmailAccountEmail');
+            const connectedAt = document.getElementById('gmailConnectedAt');
+            const lastCode = document.getElementById('gmailLastCode');
+            const redirectDisplay = document.getElementById('oauthRedirectUriDisplay');
+
+            if (box) {
+                box.className = 'flex items-center justify-between p-4 rounded-xl border ' +
+                    (g.connected ? 'border-emerald-200 bg-emerald-50/60' : 'border-red-200 bg-red-50/60');
+            }
+            if (boxIcon) {
+                boxIcon.className = 'w-10 h-10 rounded-xl flex items-center justify-center font-bold ' +
+                    (g.connected ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600');
+                boxIcon.innerHTML = g.connected
+                    ? '<i class="fa-solid fa-envelope-circle-check"></i>'
+                    : '<i class="fa-solid fa-envelope"></i>';
+            }
+            if (boxTitle) boxTitle.textContent = g.connected ? 'Connected to Gmail API' : 'Not Connected';
+            if (boxHint) boxHint.textContent = g.connected
+                ? `Sending as ${g.email || 'your Gmail account'}`
+                : 'Click Connect Gmail API to begin authorization.';
+            if (badge) {
+                badge.textContent = g.connected ? 'Active' : 'Inactive';
+                badge.className = 'text-[10px] font-bold uppercase px-2.5 py-1 rounded-full ' +
+                    (g.connected ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700');
+            }
+            if (acctEmail) acctEmail.textContent = g.email || '—';
+            if (connectedAt) connectedAt.textContent = g.connectedAt ? new Date(g.connectedAt).toLocaleString() : '—';
+            if (lastCode) lastCode.textContent = g.lastCode ? g.lastCode.substring(0, 48) + '…' : '—';
+            if (redirectDisplay) redirectDisplay.textContent = getGmailRedirectUri();
+        }
+
+        /* ============== AUTH ============== */
         function fillAdminCreds() {
             document.getElementById('loginUsername').value = 'admin';
             document.getElementById('loginPassword').value = 'admin';
@@ -724,6 +997,7 @@
             switchTab('dashboard');
             renderUsersTable();
             renderProjects();
+            renderGmailStatus();
         }
 
         function updateNavVisibility() {
@@ -733,6 +1007,7 @@
                 'nav-dashboard': true,
                 'nav-users': role === 'admin',
                 'nav-permissions': role === 'admin',
+                'nav-gmail': role === 'admin',
                 'nav-website': role === 'admin',
                 'nav-projects': role === 'admin' || !!perms.projects,
                 'nav-analytics': role === 'admin' || !!perms.analytics,
@@ -749,7 +1024,7 @@
             const role = state.currentUser.role;
             if (role !== 'admin') {
                 const perms = state.permissions[role] || {};
-                const restricted = { users:false, permissions:false, website:false, projects:!!perms.projects, analytics:!!perms.analytics, reports:!!perms.reports, settings:!!perms.settings };
+                const restricted = { users:false, permissions:false, gmail:false, website:false, projects:!!perms.projects, analytics:!!perms.analytics, reports:!!perms.reports, settings:!!perms.settings };
                 if (tabId !== 'dashboard' && restricted[tabId] === false) {
                     document.getElementById('accessDeniedModal').classList.remove('hidden');
                     return;
@@ -767,9 +1042,10 @@
             document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
             const targetTab = document.getElementById(`tab-${tabId}`);
             if (targetTab) targetTab.classList.remove('hidden');
-            const titles = { dashboard:'Dashboard Overview', users:'User Management', permissions:'Role Permission Assignment', projects:'Projects & Tasks', analytics:'Analytics & Metrics', reports:'Audit Reports', website:'Website Control Center', settings:'System Settings' };
+            const titles = { dashboard:'Dashboard Overview', users:'User Management', permissions:'Role Permission Assignment', projects:'Projects & Tasks', analytics:'Analytics & Metrics', reports:'Audit Reports', gmail:'Gmail API Integration', website:'Website Control Center', settings:'System Settings' };
             document.getElementById('pageTitle').textContent = titles[tabId] || 'Dashboard';
             if (tabId === 'website') renderWebsiteSettingsForm();
+            if (tabId === 'gmail') renderGmailStatus();
         }
 
         function closeAccessDenied() { document.getElementById('accessDeniedModal').classList.add('hidden'); }
@@ -940,8 +1216,6 @@
         function renderWebsiteSettingsForm() {
             const s = state.siteSettings;
             const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
-
-            // Brand / Hero text
             set('ws-brandName', s.brandName);
             set('ws-brandTagline', s.brandTagline);
             set('ws-heroBadge', s.heroBadge);
@@ -950,8 +1224,6 @@
             set('ws-statDelivery', s.statDelivery);
             set('ws-statEngagement', s.statEngagement);
             set('ws-statSupport', s.statSupport);
-
-            // Logo / Favicon / Tab
             set('ws-logoIcon', s.logoIcon);
             set('ws-faviconUrl', s.faviconUrl);
             set('ws-tabTitle', s.tabTitle);
@@ -959,15 +1231,12 @@
             updateLogoPreview(s.logoIcon);
             const favPrev = document.getElementById('ws-faviconPreview');
             if (favPrev) favPrev.src = s.faviconUrl;
-
-            // Hero preview card
             set('ws-heroCardBrand', s.heroCardBrand);
             set('ws-heroCardTitle', s.heroCardTitle);
             set('ws-heroCardSubtitle', s.heroCardSubtitle);
             set('ws-heroCardImage', s.heroCardImage);
             const heroImgPrev = document.getElementById('ws-heroCardImagePreview');
             if (heroImgPrev) heroImgPrev.src = s.heroCardImage;
-
             renderPlanEditors();
         }
 
@@ -977,7 +1246,7 @@
             const v = (val || '').trim();
             if (!v) {
                 prev.innerHTML = `<i class="fa-solid fa-bolt-lightning text-lg"></i>`;
-            } else if (v.startsWith('http') || v.startsWith('data:') || v.includes('/') || v.endsWith('.png') || v.endsWith('.svg') || v.endsWith('.jpg')) {
+            } else if (v.startsWith('http') || v.startsWith('data:') || v.includes('/') || /\.(png|svg|jpg|jpeg|gif|webp|ico)$/i.test(v)) {
                 prev.innerHTML = `<img src="${escAttr(v)}" class="w-full h-full object-cover" alt="logo" onerror="this.replaceWith(Object.assign(document.createElement('i'),{className:'fa-solid fa-bolt-lightning text-lg'}))">`;
             } else {
                 prev.innerHTML = `<i class="${escAttr(v)} text-lg"></i>`;
@@ -1008,7 +1277,6 @@
             });
         }
 
-        // Live preview while typing on the Website tab
         document.addEventListener('input', (e) => {
             if (e.target.id === 'ws-logoIcon') updateLogoPreview(e.target.value);
             if (e.target.id === 'ws-faviconUrl') {
@@ -1024,7 +1292,6 @@
         function saveWebsiteSettings() {
             const s = state.siteSettings;
             const get = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
-
             s.brandName = get('ws-brandName') || DEFAULT_SITE_SETTINGS.brandName;
             s.brandTagline = get('ws-brandTagline');
             s.heroBadge = get('ws-heroBadge');
@@ -1033,17 +1300,14 @@
             s.statDelivery = get('ws-statDelivery');
             s.statEngagement = get('ws-statEngagement');
             s.statSupport = get('ws-statSupport');
-
             s.logoIcon = get('ws-logoIcon') || DEFAULT_SITE_SETTINGS.logoIcon;
             s.faviconUrl = get('ws-faviconUrl') || DEFAULT_SITE_SETTINGS.faviconUrl;
             s.tabTitle = get('ws-tabTitle') || DEFAULT_SITE_SETTINGS.tabTitle;
             s.metaDescription = get('ws-metaDescription') || DEFAULT_SITE_SETTINGS.metaDescription;
-
             s.heroCardBrand = get('ws-heroCardBrand');
             s.heroCardTitle = get('ws-heroCardTitle');
             s.heroCardSubtitle = get('ws-heroCardSubtitle');
             s.heroCardImage = get('ws-heroCardImage');
-
             document.querySelectorAll('#ws-plansContainer [data-plan]').forEach(el => {
                 const idx = parseInt(el.getAttribute('data-plan'), 10);
                 const field = el.getAttribute('data-field');
@@ -1051,7 +1315,6 @@
                 if (field === 'features') s.plans[idx].features = el.value.split('\n').map(x => x.trim()).filter(Boolean);
                 else s.plans[idx][field] = el.value.trim();
             });
-
             persistData();
             showToast('Website settings saved! Open the front end to see them live.');
         }
@@ -1073,13 +1336,14 @@
 
         window.addEventListener('storage', (e) => {
             if (!e.key) return;
-            if ([SHARED_KEYS.USERS, SHARED_KEYS.PERMS, SHARED_KEYS.PROJECTS, SHARED_KEYS.SETTINGS].includes(e.key)) {
+            if ([SHARED_KEYS.USERS, SHARED_KEYS.PERMS, SHARED_KEYS.PROJECTS, SHARED_KEYS.SETTINGS, SHARED_KEYS.GMAIL].includes(e.key)) {
                 loadPersistedData();
                 if (state.currentUser) {
                     renderUsersTable();
                     renderProjects();
                     renderPermissionCheckboxes();
                     renderWebsiteSettingsForm();
+                    renderGmailStatus();
                 }
             }
         });
