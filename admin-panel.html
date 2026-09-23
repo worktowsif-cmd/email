@@ -146,7 +146,6 @@
                         <h2 id="pageTitle" class="text-lg font-bold text-slate-800">Dashboard Overview</h2>
                     </div>
                     <div class="flex items-center gap-3">
-                        <!-- Gmail status pill (hidden until connected) -->
                         <div id="gmailStatusPill" class="hidden items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200">
                             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                             <span class="text-xs font-medium text-emerald-700">Gmail Connected</span>
@@ -242,12 +241,9 @@
                                             <i class="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:translate-x-0.5 transition-transform"></i>
                                         </button>
 
-                                        <!-- ⭐ NEW: Connect Gmail API Quick Action -->
                                         <button id="connectGmailQuickAction" onclick="connectGmail()" class="w-full text-left p-3 rounded-xl border border-red-100 hover:bg-red-50 transition-colors flex items-center justify-between group">
                                             <div class="flex items-center gap-3">
-                                                <div class="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center">
-                                                    <i class="fa-solid fa-envelope text-xs"></i>
-                                                </div>
+                                                <div class="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center"><i class="fa-solid fa-envelope text-xs"></i></div>
                                                 <div>
                                                     <span class="text-xs font-semibold text-slate-700 block" id="connectGmailQuickTitle">Connect Gmail API</span>
                                                     <span class="text-[10px] text-slate-400" id="connectGmailQuickHint">Authorize PushBannerHub to dispatch emails</span>
@@ -387,7 +383,7 @@
                         </div>
                     </div>
 
-                    <!-- ⭐ GMAIL INTEGRATION TAB -->
+                    <!-- GMAIL INTEGRATION TAB -->
                     <div id="tab-gmail" class="tab-content hidden space-y-6 fade-in">
                         <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                             <div>
@@ -401,7 +397,6 @@
                             </button>
                         </div>
 
-                        <!-- Status card -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6">
                                 <h4 class="font-bold text-slate-900 text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
@@ -426,12 +421,12 @@
                                             <p class="font-mono text-slate-800 truncate" id="gmailAccountEmail">—</p>
                                         </div>
                                         <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                            <p class="text-slate-400 font-semibold uppercase tracking-wider text-[10px] mb-1">Connected At</p>
+                                            <p class="text-slate-400 font-semibold uppercase tracking-wider text-[10px] mb-1">Token Expires</p>
                                             <p class="font-mono text-slate-800 truncate" id="gmailConnectedAt">—</p>
                                         </div>
                                     </div>
                                     <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                        <p class="text-slate-400 font-semibold uppercase tracking-wider text-[10px] mb-1">Last OAuth Code</p>
+                                        <p class="text-slate-400 font-semibold uppercase tracking-wider text-[10px] mb-1">Access Token (truncated)</p>
                                         <p class="font-mono text-slate-800 text-[11px] break-all" id="gmailLastCode">—</p>
                                     </div>
                                 </div>
@@ -669,11 +664,10 @@
         /* ============== GMAIL OAUTH CONFIG ============== */
         const GMAIL_CLIENT_ID = '956741241302-0rnquu2r8as8igegjlc8lf80p21atgql.apps.googleusercontent.com';
         const GMAIL_SCOPE = 'https://www.googleapis.com/auth/gmail.send';
-        // Redirect URI is computed from the current page so it works both locally and on Vercel.
+
         function getGmailRedirectUri() {
-            // Strip any existing query string / hash so the URI stays clean
-            const base = window.location.origin + window.location.pathname;
-            return base;
+            // Clean path without query string or hash
+            return window.location.origin + window.location.pathname;
         }
 
         const DEFAULT_SITE_SETTINGS = {
@@ -718,7 +712,9 @@
                 email: '',
                 connectedAt: null,
                 lastCode: '',
-                scope: GMAIL_SCOPE
+                scope: GMAIL_SCOPE,
+                accessToken: '',
+                expiresAt: 0
             },
             projects: [
                 { id: 1, name: 'Cloud Infrastructure Upgrade', desc: 'Migration of core backend microservices to AWS secure clusters.', status: 'In Progress', progress: 75 },
@@ -790,7 +786,7 @@
         }
 
         /* ==================================================
-           GMAIL OAUTH
+           GMAIL OAUTH — implicit flow with working email sending
            ================================================== */
         function connectGmail() {
             const CLIENT_ID = GMAIL_CLIENT_ID;
@@ -801,88 +797,186 @@
                 `https://accounts.google.com/o/oauth2/v2/auth?` +
                 `client_id=${encodeURIComponent(CLIENT_ID)}&` +
                 `redirect_uri=${encodeURIComponent(REDIRECT_URI)}&` +
-                `response_type=code&` +
+                `response_type=token&` +
                 `scope=${encodeURIComponent(SCOPE)}&` +
-                `access_type=offline&` +
+                `include_granted_scopes=true&` +
                 `prompt=consent`;
 
-            // Small UX feedback before navigating away
             showToast('Redirecting to Google…');
-
-            // Navigate to Google
             window.location.href = authUrl;
         }
 
-        /**
-         * Runs on page load. If Google redirected back with ?code=..., we
-         * capture the code, store it, update the connection status, and
-         * clean the URL so a refresh doesn't re-process the same code.
-         */
         function handleGmailOAuthCallback() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const authCode = urlParams.get('code');
-            const errorParam = urlParams.get('error');
+            const hash = window.location.hash.substring(1);
+            const params = new URLSearchParams(hash);
+            const accessToken = params.get('access_token');
+            const expiresIn = parseInt(params.get('expires_in') || '0', 10);
+            const errorParam = params.get('error');
 
-            if (errorParam) {
-                // Handle Google-side rejections gracefully
-                showToast(`Gmail authorization failed: ${errorParam}`);
+            // Fallback: also catch ?code= if Google ever uses code flow
+            const qs = new URLSearchParams(window.location.search);
+            const codeFallback = qs.get('code');
+            const qsError = qs.get('error');
+
+            if (errorParam || qsError) {
+                showToast(`Gmail authorization failed: ${errorParam || qsError}`);
                 window.history.replaceState({}, document.title, window.location.pathname);
                 return;
             }
 
-            if (!authCode) return;
+            if (accessToken) {
+                const expiresAt = Date.now() + (expiresIn * 1000);
+                state.gmail.connected = true;
+                state.gmail.accessToken = accessToken;
+                state.gmail.expiresAt = expiresAt;
+                state.gmail.connectedAt = new Date().toISOString();
+                state.gmail.scope = GMAIL_SCOPE;
+                state.gmail.lastCode = accessToken.substring(0, 40) + '…';
+                persistData();
+                renderGmailStatus();
 
-            console.log('Received OAuth code:', authCode);
+                // Fetch real Gmail address and update the display
+                fetchGmailProfile(accessToken).then(email => {
+                    if (email) {
+                        state.gmail.email = email;
+                        persistData();
+                        renderGmailStatus();
+                    }
+                });
 
-            // Persist the code + connected state
-            state.gmail.connected = true;
-            state.gmail.lastCode = authCode;
-            state.gmail.connectedAt = new Date().toISOString();
-            state.gmail.scope = GMAIL_SCOPE;
-            // Google's "code" payload doesn't include the email, so we derive a friendly placeholder.
-            // The real email is resolved server-side when exchanging code → tokens → profile.
-            state.gmail.email = state.gmail.email || 'authorized.gmail@gmail.com';
+                window.history.replaceState({}, document.title, window.location.pathname);
+                alert('✅ Gmail connected successfully!\n\nAccess token captured and saved.\nYou can now send emails from PushBannerHub.');
+                showToast('Gmail connected successfully!');
+                return;
+            }
 
-            persistData();
-            renderGmailStatus();
+            if (codeFallback) {
+                // Legacy fallback if the code flow is somehow used
+                state.gmail.connected = true;
+                state.gmail.lastCode = codeFallback;
+                state.gmail.connectedAt = new Date().toISOString();
+                persistData();
+                renderGmailStatus();
+                window.history.replaceState({}, document.title, window.location.pathname);
+                showToast('OAuth code captured.');
+            }
+        }
 
-            // Clean the URL (remove ?code=... & scope=... etc.)
-            window.history.replaceState({}, document.title, window.location.pathname);
-
-            // Friendly confirmation
-            alert('✅ Gmail connected successfully!\n\nAuthorization code captured and saved.\n\n' +
-                  'You can now send emails through the Gmail API. If you need to persist tokens ' +
-                  'across sessions, forward this code to your serverless /api/token endpoint.');
-            showToast('Gmail connected successfully!');
+        async function fetchGmailProfile(accessToken) {
+            try {
+                const res = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/profile', {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                if (!res.ok) return '';
+                const data = await res.json();
+                return data.emailAddress || '';
+            } catch { return ''; }
         }
 
         function disconnectGmail() {
             if (!confirm('Disconnect Gmail? You will need to re-authorize to send emails again.')) return;
-            state.gmail = { connected: false, email: '', connectedAt: null, lastCode: '', scope: GMAIL_SCOPE };
+            state.gmail = {
+                connected: false,
+                email: '',
+                connectedAt: null,
+                lastCode: '',
+                scope: GMAIL_SCOPE,
+                accessToken: '',
+                expiresAt: 0
+            };
             persistData();
             renderGmailStatus();
             showToast('Gmail disconnected.');
         }
 
-        function testGmailSend() {
+        function buildRawEmail({ to, from, subject, body, html }) {
+            const boundary = 'PBH_' + Math.random().toString(36).slice(2);
+            const encodedSubject = '=?UTF-8?B?' + btoa(unescape(encodeURIComponent(subject))) + '?=';
+            const headers = [
+                `To: ${to}`,
+                `From: ${from}`,
+                `Subject: ${encodedSubject}`,
+                'MIME-Version: 1.0',
+                `Content-Type: multipart/alternative; boundary="${boundary}"`
+            ].join('\r\n');
+
+            const textPart = `--${boundary}\r\nContent-Type: text/plain; charset="UTF-8"\r\n\r\n${body}\r\n`;
+            const htmlPart = html
+                ? `--${boundary}\r\nContent-Type: text/html; charset="UTF-8"\r\n\r\n${html}\r\n`
+                : '';
+
+            const message = `${headers}\r\n\r\n${textPart}${htmlPart}--${boundary}--`;
+
+            // Base64URL encode
+            return btoa(unescape(encodeURIComponent(message)))
+                .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        }
+
+        async function sendEmailViaGmail({ to, subject, body, html }) {
+            const g = state.gmail;
+
+            if (!g.connected || !g.accessToken) {
+                throw new Error('Gmail is not connected. Click Connect Gmail API first.');
+            }
+            if (g.expiresAt && Date.now() > g.expiresAt) {
+                throw new Error('Gmail access token expired. Please Re-authorize.');
+            }
+
+            const from = g.email || 'me';
+            const raw = buildRawEmail({ to, from, subject, body, html });
+
+            const res = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${g.accessToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ raw })
+            });
+
+            if (!res.ok) {
+                const errText = await res.text();
+                throw new Error(`Gmail API error ${res.status}: ${errText}`);
+            }
+            return await res.json();
+        }
+
+        async function testGmailSend() {
             if (!state.gmail.connected) {
                 showToast('Connect Gmail first to send a test email.');
                 return;
             }
-            showToast('Test email queued — exchange the OAuth code for tokens on the server to complete delivery.');
+            const to = prompt('Send test email to:', state.gmail.email || '');
+            if (!to) return;
+
+            try {
+                showToast('Sending test email via Gmail…');
+                const result = await sendEmailViaGmail({
+                    to,
+                    subject: '✅ PushBannerHub Gmail Test',
+                    body: `Hello!\n\nThis is a test email sent from your PushBannerHub admin panel at ${new Date().toLocaleString()}.\n\nIf you received this, Gmail API integration is working correctly.\n\n— PushBannerHub`,
+                    html: `<div style="font-family:Inter,Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+                             <h2 style="color:#4f46e5;">✅ PushBannerHub Gmail Test</h2>
+                             <p>This is a test email sent from your PushBannerHub admin panel at <strong>${new Date().toLocaleString()}</strong>.</p>
+                             <p>If you received this, Gmail API integration is working correctly.</p>
+                             <p style="color:#888">— PushBannerHub</p>
+                           </div>`
+                });
+                showToast(`✅ Test email sent! ID: ${result.id}`);
+                alert(`✅ Email sent successfully!\n\nMessage ID: ${result.id}\nCheck the recipient's inbox (and spam folder).`);
+            } catch (err) {
+                console.error(err);
+                showToast(`❌ Send failed: ${err.message}`);
+                alert(`❌ Send failed:\n\n${err.message}`);
+            }
         }
 
         function renderGmailStatus() {
             const g = state.gmail;
 
-            // Topbar pill
             const pill = document.getElementById('gmailStatusPill');
-            if (pill) {
-                if (g.connected) pill.classList.remove('hidden');
-                else pill.classList.add('hidden');
-            }
+            if (pill) pill.classList.toggle('hidden', !g.connected);
 
-            // Dashboard stat
             const statTitle = document.getElementById('statGmailStatus');
             const statHint  = document.getElementById('statGmailHint');
             const statIcon  = document.getElementById('statGmailIcon');
@@ -899,10 +993,9 @@
                     : '<i class="fa-solid fa-envelope"></i>';
             }
 
-            // Quick Action card
-            const qa = document.getElementById('connectGmailQuickAction');
             const qaTitle = document.getElementById('connectGmailQuickTitle');
             const qaHint  = document.getElementById('connectGmailQuickHint');
+            const qa = document.getElementById('connectGmailQuickAction');
             if (qaTitle) qaTitle.textContent = g.connected ? 'Gmail Connected' : 'Connect Gmail API';
             if (qaHint)  qaHint.textContent  = g.connected ? 'Manage Gmail integration' : 'Authorize PushBannerHub to dispatch emails';
             if (qa) {
@@ -912,7 +1005,6 @@
                 qa.classList.toggle('hover:bg-emerald-50', g.connected);
             }
 
-            // Gmail tab: status box
             const box = document.getElementById('gmailStatusBox');
             const boxIcon = document.getElementById('gmailStatusBoxIcon');
             const boxTitle = document.getElementById('gmailStatusBoxTitle');
@@ -944,7 +1036,14 @@
                     (g.connected ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700');
             }
             if (acctEmail) acctEmail.textContent = g.email || '—';
-            if (connectedAt) connectedAt.textContent = g.connectedAt ? new Date(g.connectedAt).toLocaleString() : '—';
+            if (connectedAt) {
+                if (g.expiresAt) {
+                    const mins = Math.max(0, Math.round((g.expiresAt - Date.now()) / 60000));
+                    connectedAt.textContent = `in ~${mins} min`;
+                } else {
+                    connectedAt.textContent = '—';
+                }
+            }
             if (lastCode) lastCode.textContent = g.lastCode ? g.lastCode.substring(0, 48) + '…' : '—';
             if (redirectDisplay) redirectDisplay.textContent = getGmailRedirectUri();
         }
